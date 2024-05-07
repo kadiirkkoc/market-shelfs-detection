@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: detection
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shelf-detection
+    username: postgres
+    password: admin
+
+server:
+  port: 8089
