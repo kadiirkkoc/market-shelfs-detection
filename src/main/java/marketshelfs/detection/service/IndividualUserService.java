@@ -11,5 +11,5 @@ public interface IndividualUserService {
     IndividualUserDto getIndividualUserById(Long id);
     String addIndividualUser(IndividualUserDto individualUserDto);
     String updateIndividualUser(Long id, IndividualUserDto individualUserDto);
-    String deleteIndividyalUser(Long id);
+    String deleteIndividualUser(Long id);
 }
