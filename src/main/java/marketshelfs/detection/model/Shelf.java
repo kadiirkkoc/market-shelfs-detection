@@ -42,7 +42,10 @@ public class Shelf {
     @Column(name = "relationship_ratio")
     private float relationshipRatio;
 
-    @OneToMany(mappedBy = "shelf")
-    private List<Image> images;
+    @Column(name = "uploaded_image_url")
+    private String uploadedImageUrl;
+
+    @Column(name = "rendered_image_url")
+    private String renderedImageUrl;
 
 }
