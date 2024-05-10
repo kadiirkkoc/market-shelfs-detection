@@ -1,4 +1,8 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
   application:
     name: detection
   jpa:
@@ -13,5 +17,16 @@ spring:
     username: postgres
     password: admin
 
+
 server:
   port: 8089
+
+
+ai-service:
+  process-url: "http://your-ai-service-url/processImage"
+
+upload:
+  shelf:
+    images: uploads/shelf
+  rendered:
+    images: uploads/rendered_images
