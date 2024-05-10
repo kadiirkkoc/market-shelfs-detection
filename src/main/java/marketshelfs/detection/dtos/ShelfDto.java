@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 @Builder
@@ -12,10 +13,11 @@ public class ShelfDto {
 
     private String category;
     private String outlierProductCategory;
-    private int productCount;
-    private int outlierProductCount;
-    private int totalProductCount;
-    private float relationshipRatio;
+    private Integer productCount;
+    private Integer outlierProductCount;
+    private Integer totalProductCount;
+    private Float relationshipRatio;
+    private MultipartFile file;
     private String uploadedImageUrl;
     private String renderedImageUrl;
 }

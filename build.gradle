@@ -28,6 +28,13 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
+	implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+	implementation 'com.google.firebase:firebase-admin:8.0.0'
+	implementation group: 'org.springframework', name: 'spring-beans', version: '5.3.12'
+
+
+
 }
 
 tasks.named('test') {
