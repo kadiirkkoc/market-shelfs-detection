@@ -31,7 +31,7 @@ import java.util.UUID;
             Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
             storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
-            String downloadUrl = "https://firebasestorage.googleapis.com/v0/b/zibam-2d78a.appspot.com/o/%s?alt=media";
+            String downloadUrl = "https://firebasestorage.googleapis.com/v0/b/<thesisdemoproject.appspot.com>/o/%s?alt=media";
             return String.format(downloadUrl, URLEncoder.encode(storagePath, StandardCharsets.UTF_8));
         }
 

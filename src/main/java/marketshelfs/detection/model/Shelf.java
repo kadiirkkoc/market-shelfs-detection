@@ -48,4 +48,5 @@ public class Shelf {
     @Column(name = "rendered_image_url")
     private String renderedImageUrl;
 
+
 }

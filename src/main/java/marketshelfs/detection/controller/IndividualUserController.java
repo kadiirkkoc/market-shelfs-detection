@@ -1,5 +1,6 @@
 package marketshelfs.detection.controller;
 
+import marketshelfs.detection.beans.AuthenticationResponse;
 import marketshelfs.detection.dtos.IndividualUserDto;
 import marketshelfs.detection.service.IndividualUserService;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class IndividualUserController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> addIndividualUser(@RequestBody IndividualUserDto individualUserDto ) {
+    public ResponseEntity<AuthenticationResponse> addIndividualUser(@RequestBody IndividualUserDto individualUserDto ) {
         return new ResponseEntity<>(individualUserService.addIndividualUser(individualUserDto), HttpStatus.CREATED);
     }
 

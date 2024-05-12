@@ -1,6 +1,7 @@
 package marketshelfs.detection.controller;
 
 
+import marketshelfs.detection.beans.AuthenticationResponse;
 import marketshelfs.detection.dtos.CorporateUserDto;
 import marketshelfs.detection.service.CorporateUserService;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class CorporateUserController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> addCorporateUser(@RequestBody CorporateUserDto corporateUserDto) {
+    public ResponseEntity<AuthenticationResponse> addCorporateUser(@RequestBody CorporateUserDto corporateUserDto) {
         return new ResponseEntity<>(corporateUserService.addCorporateUser(corporateUserDto), HttpStatus.CREATED);
     }
 

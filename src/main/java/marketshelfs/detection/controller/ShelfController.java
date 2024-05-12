@@ -18,7 +18,7 @@ public class ShelfController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> addShelf(@ModelAttribute ShelfDto shelfDto  ) {
+    public ResponseEntity<String> addShelf(@ModelAttribute ShelfDto shelfDto ) {
         return new ResponseEntity<>(shelfService.addShelf(shelfDto), HttpStatus.CREATED);
     }
 }
