@@ -12,5 +12,6 @@ public class CorporateUserDto {
 
     private String marketName;
     private String branchNumber;
+    private String phone;
     private String password;
 }

@@ -13,7 +13,7 @@ spring:
       ddl-auto: update
       show-sql: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/shelf-detection
+    url: jdbc:postgresql://localhost:5432/shelf-detection2
     username: postgres
     password: admin
 
@@ -23,7 +23,7 @@ server:
 
 
 ai-service:
-  process-url: "http://your-ai-service-url/processImage"
+  process-url: "https://c2c9-31-223-46-159.ngrok-free.app"
 
 upload:
   shelf:

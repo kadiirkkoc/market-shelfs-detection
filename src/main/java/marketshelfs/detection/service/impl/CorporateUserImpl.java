@@ -1,12 +1,18 @@
 package marketshelfs.detection.service.impl;
 
+import marketshelfs.detection.beans.AuthenticationResponse;
 import marketshelfs.detection.dtos.CorporateUserDto;
+import marketshelfs.detection.enums.UserRole;
 import marketshelfs.detection.loggers.MainLogger;
 import marketshelfs.detection.loggers.messages.CorporateUserMessage;
 import marketshelfs.detection.model.CorporateUser;
+import marketshelfs.detection.model.User;
 import marketshelfs.detection.repository.CorporateUserRepository;
+import marketshelfs.detection.repository.UserRepository;
+import marketshelfs.detection.security.JwtService;
 import marketshelfs.detection.service.CorporateUserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,10 +24,20 @@ import java.util.stream.Collectors;
 public class CorporateUserImpl implements CorporateUserService{
 
     private final CorporateUserRepository corporateUserRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final JwtService jwtService;
     private final MainLogger logger = new MainLogger(CorporateUserImpl.class);
 
-    public CorporateUserImpl(CorporateUserRepository corporateUserRepository) {
+
+    public CorporateUserImpl(CorporateUserRepository corporateUserRepository,
+                             BCryptPasswordEncoder passwordEncoder,
+                             UserRepository userRepository,
+                             JwtService jwtService) {
         this.corporateUserRepository = corporateUserRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
 
@@ -49,14 +65,36 @@ public class CorporateUserImpl implements CorporateUserService{
     }
 
     @Override
-    public String addCorporateUser(CorporateUserDto corporateUserDto) {
+    public AuthenticationResponse addCorporateUser(CorporateUserDto corporateUserDto) {
+
+        String username = corporateUserDto.getMarketName()+corporateUserDto.getBranchNumber();
+        String password = passwordEncoder.encode(corporateUserDto.getPassword());
+
+        User user = User.builder()
+                .username(username)
+                .password(password)
+                .userRole(UserRole.CORPORATE)
+                .dailyLimit(3)
+                .build();
+
         CorporateUser newCorporateUser = CorporateUser.builder()
                 .marketName(corporateUserDto.getMarketName())
                 .branchNumber(corporateUserDto.getBranchNumber())
+                .username(username)
+                .password(password)
+                .phone(corporateUserDto.getPhone())
+                .dailyLimit(3)
+                .userRole(UserRole.CORPORATE)
+                .user(user)
                 .uuid(UUID.randomUUID().toString())
                 .build();
-        newCorporateUser = corporateUserRepository.save(newCorporateUser);
-        return logger.log(CorporateUserMessage.CREATE + newCorporateUser.getId(), HttpStatus.OK);
+
+        user.setCorporateUser(newCorporateUser);
+        userRepository.save(user);
+
+        return AuthenticationResponse.builder()
+                .token(jwtService.generateToken(Optional.ofNullable(user)))
+                .build();
 
     }
 
@@ -68,6 +106,7 @@ public class CorporateUserImpl implements CorporateUserService{
         }
         user.get().setMarketName(corporateUserDto.getBranchNumber());
         user.get().setBranchNumber(corporateUserDto.getBranchNumber());
+        user.get().setUsername(corporateUserDto.getMarketName()+corporateUserDto.getBranchNumber());
         corporateUserRepository.save(user.get());
         return CorporateUserMessage.UPDATE + user.get().getId();
     }
