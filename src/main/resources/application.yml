@@ -23,7 +23,7 @@ server:
 
 
 ai-service:
-  process-url: "https://c2c9-31-223-46-159.ngrok-free.app"
+  process-url: "your-ai-service-url"
 
 upload:
   shelf:
