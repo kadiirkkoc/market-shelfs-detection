@@ -31,7 +31,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.rmi.server.LogStream.log;
 
@@ -71,7 +75,6 @@ public class ShelfServiceImpl implements ShelfService {
         if (!canUpload(user.orElse(null))) {
             throw new IllegalStateException("Upload limit reached or not reset yet. Try again later.");
         }
-
         String firebaseUploadedUrl = firebaseImageService.upload(shelfDto.getFile());
 
         ShelfDto enrichedShelfDto = processImageWithAiService();
@@ -89,7 +92,7 @@ public class ShelfServiceImpl implements ShelfService {
 
         shelfRepository.save(shelf);
 
-        return ShelfMessage.CREATE + shelf.getId() + shelf.getRenderedImageUrl();
+        return shelf.getRenderedImageUrl();
     }
 
     public ShelfDto processImageWithAiService() {
@@ -107,7 +110,7 @@ public class ShelfServiceImpl implements ShelfService {
 
             return ShelfDto.builder()
                     .category(jsonResponse.has("category") ? jsonResponse.get("category").getAsString() : null)
-                    .outlierProductCategory(jsonResponse.has("outlier_product_category") ? jsonResponse.get("outlier_product_category").getAsString() : null)
+                    .outlierProductCategory(jsonResponse.has("outlier_product_category") ? String.valueOf(jsonResponse.get("outlier_product_category").getAsString()) : null)
                     .productCount(jsonResponse.has("product_count") ? jsonResponse.get("product_count").getAsInt() : 0)
                     .outlierProductCount(jsonResponse.has("outlier_product_count") ? jsonResponse.get("outlier_product_count").getAsInt() : 0)
                     .totalProductCount(jsonResponse.has("total_product_count") ? jsonResponse.get("total_product_count").getAsInt() : 0)
@@ -167,10 +170,10 @@ public class ShelfServiceImpl implements ShelfService {
                 corporateUserRepository.save(corporateUser);
             }
             user.setLastUploadTime(LocalDateTime.now());
+            System.out.println("Last Upload Time before save: " + user.getLastUploadTime());
             userRepository.save(user);
+            userRepository.flush();
         }
     }
-
-
 }
 
