@@ -23,5 +23,5 @@ server:
 
 
 ai-service:
-  process-url: "your-process-url"
+  process-url: "https://redbird-free-literally.ngrok-free.app/"
 
