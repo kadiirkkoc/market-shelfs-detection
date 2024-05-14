@@ -72,9 +72,19 @@ public class ShelfServiceImpl implements ShelfService {
             throw new IllegalArgumentException("User not found");
         }
 
-        if (!canUpload(user.orElse(null))) {
-            throw new IllegalStateException("Upload limit reached or not reset yet. Try again later.");
+        LocalDateTime now = LocalDateTime.now();
+        if (user.get().getLastUploadTime() == null || Duration.between(user.get().getLastUploadTime(), now).toHours() >= 24) {
+            user.get().setDailyLimit(user.get().getUserRole() == UserRole.INDIVIDUAL ? 1 : 3);
         }
+
+        if (user.get().getDailyLimit() <= 0) {
+            throw new IllegalStateException("Upload limit exceeded");
+        }
+
+        user.get().setLastUploadTime(now);
+        user.get().setDailyLimit(user.get().getDailyLimit() - 1);
+        userRepository.save(user.get());
+
         String firebaseUploadedUrl = firebaseImageService.upload(shelfDto.getFile());
 
         ShelfDto enrichedShelfDto = processImageWithAiService();
@@ -121,58 +131,6 @@ public class ShelfServiceImpl implements ShelfService {
         } catch (IOException e) {
             log("Failed to communicate with AI service" + e);
             throw new RuntimeException("Failed to communicate with AI service", e);
-        }
-    }
-
-    private boolean canUpload(User user) {
-        LocalDateTime now = LocalDateTime.now();
-
-            if (user.getLastUploadTime() != null && Duration.between(user.getLastUploadTime(), now).toHours() >= 24) {
-            resetUploadLimit(user);
-            user.setLastUploadTime(null);
-            userRepository.save(user);
-        }
-
-        return getDailyLimit(user) > 0;
-    }
-
-    private int getDailyLimit(User user) {
-        if (user.getUserRole() == UserRole.INDIVIDUAL) {
-            return user.getIndividualUser().getDailyLimit();
-        } else if (user.getUserRole() == UserRole.CORPORATE) {
-            return user.getCorporateUser().getDailyLimit();
-        }
-        return 0;
-    }
-
-    private void resetUploadLimit(User user) {
-        if (user.getUserRole() == UserRole.INDIVIDUAL) {
-            IndividualUser individualUser = user.getIndividualUser();
-            individualUser.setDailyLimit(1);
-            individualUserRepository.save(individualUser);
-        } else if (user.getUserRole() == UserRole.CORPORATE) {
-            CorporateUser corporateUser = user.getCorporateUser();
-            corporateUser.setDailyLimit(3);
-            corporateUserRepository.save(corporateUser);
-        }
-    }
-
-    private void updateUploadLimit(User user) {
-        int currentLimit = getDailyLimit(user);
-        if (currentLimit > 0) {
-            if (user.getUserRole() == UserRole.INDIVIDUAL) {
-                IndividualUser individualUser = user.getIndividualUser();
-                individualUser.setDailyLimit(currentLimit - 1);
-                individualUserRepository.save(individualUser);
-            } else if (user.getUserRole() == UserRole.CORPORATE) {
-                CorporateUser corporateUser = user.getCorporateUser();
-                corporateUser.setDailyLimit(currentLimit - 1);
-                corporateUserRepository.save(corporateUser);
-            }
-            user.setLastUploadTime(LocalDateTime.now());
-            System.out.println("Last Upload Time before save: " + user.getLastUploadTime());
-            userRepository.save(user);
-            userRepository.flush();
         }
     }
 }
