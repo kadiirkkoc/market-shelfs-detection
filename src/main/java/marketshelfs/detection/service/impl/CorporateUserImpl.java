@@ -83,7 +83,7 @@ public class CorporateUserImpl implements CorporateUserService{
                 .username(username)
                 .password(password)
                 .phone(corporateUserDto.getPhone())
-                .dailyLimit(3)
+                .dailyLimit(10)
                 .userRole(UserRole.CORPORATE)
                 .user(user)
                 .uuid(UUID.randomUUID().toString())

@@ -90,7 +90,7 @@ public class IndividualUserImpl implements IndividualUserService{
                 .username(username)
                 .password(password)
                 .phone(individualUserDto.getPhone())
-                .dailyLimit(1)
+                .dailyLimit(3)
                 .userRole(UserRole.INDIVIDUAL)
                 .user(user)
                 .uuid(UUID.randomUUID().toString())

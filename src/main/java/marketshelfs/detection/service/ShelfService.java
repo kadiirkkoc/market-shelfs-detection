@@ -2,7 +2,9 @@ package marketshelfs.detection.service;
 
 import marketshelfs.detection.dtos.ShelfDto;
 
+import java.util.Map;
+
 public interface ShelfService {
 
-    String addShelf(ShelfDto shelfDto);
+    Map<String, Object> addShelf(ShelfDto shelfDto);
 }
