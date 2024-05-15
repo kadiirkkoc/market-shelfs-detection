@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/shelf")
 public class ShelfController {
@@ -18,7 +20,7 @@ public class ShelfController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> addShelf(@ModelAttribute ShelfDto shelfDto ) {
+    public ResponseEntity<Map<String,Object>> addShelf(@ModelAttribute ShelfDto shelfDto ) {
         return new ResponseEntity<>(shelfService.addShelf(shelfDto), HttpStatus.CREATED);
     }
 }

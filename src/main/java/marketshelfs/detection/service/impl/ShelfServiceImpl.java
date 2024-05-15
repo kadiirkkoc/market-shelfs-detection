@@ -31,10 +31,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.rmi.server.LogStream.log;
@@ -65,8 +62,7 @@ public class ShelfServiceImpl implements ShelfService {
 
 
     @Override
-    public String addShelf(ShelfDto shelfDto) {
-
+    public Map<String, Object> addShelf(ShelfDto shelfDto) {
         Optional<User> user = userRepository.findByUsername(shelfDto.getUsername());
         if (user.isEmpty()) {
             throw new IllegalArgumentException("User not found");
@@ -74,7 +70,7 @@ public class ShelfServiceImpl implements ShelfService {
 
         LocalDateTime now = LocalDateTime.now();
         if (user.get().getLastUploadTime() == null || Duration.between(user.get().getLastUploadTime(), now).toHours() >= 24) {
-            user.get().setDailyLimit(user.get().getUserRole() == UserRole.INDIVIDUAL ? 1 : 3);
+            user.get().setDailyLimit(user.get().getUserRole() == UserRole.INDIVIDUAL ? 3 : 10);
         }
 
         if (user.get().getDailyLimit() <= 0) {
@@ -102,8 +98,18 @@ public class ShelfServiceImpl implements ShelfService {
 
         shelfRepository.save(shelf);
 
-        return shelf.getRenderedImageUrl();
+        Map<String, Object> response = new HashMap<>();
+        response.put("renderedImageUrl", shelf.getRenderedImageUrl());
+        response.put("category", shelf.getCategory());
+        response.put("outlierProductCategory", shelf.getOutlierProductCategory());
+        response.put("productCount", shelf.getProductCount());
+        response.put("outlierProductCount", shelf.getOutlierProductCount());
+        response.put("totalProductCount", shelf.getTotalProductCount());
+        response.put("relationshipRatio", shelf.getRelationshipRatio());
+
+        return response;
     }
+
 
     public ShelfDto processImageWithAiService() {
         HttpPost httpPost = new HttpPost(aiServiceProcessUrl);
