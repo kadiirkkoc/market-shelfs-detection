@@ -32,25 +32,31 @@ public class UserServiceImpl {
         this.jwtService = jwtService;
     }
 
-    public AuthenticationResponse authenticate(AuthenticationDto request){
+    public AuthenticationResponse authenticate(AuthenticationDto request) {
         try {
+            // Authenticate the user with the provided credentials
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
+            // Set the authentication in the security context
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
+            // Retrieve the user from the repository
             Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
             if (!userOptional.isPresent()) {
-                throw new UsernameNotFoundException("No user found with email: " + request.getUsername());
+                throw new UsernameNotFoundException("No user found with username: " + request.getUsername());
             }
 
+            // Generate a JWT token for the authenticated user
             String token = jwtService.generateToken(userOptional);
             return AuthenticationResponse.builder()
                     .token(token)
                     .userRole(userRepository.findByUsername(request.getUsername()).get().getUserRole())
+                    .dailyLimit(userOptional.get().getDailyLimit())
                     .build();
 
         } catch (AuthenticationException ex) {
+            // Handle authentication failure
             throw new BadCredentialsException("Incorrect username or password");
         }
     }

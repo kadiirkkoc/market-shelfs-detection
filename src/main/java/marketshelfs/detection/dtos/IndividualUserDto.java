@@ -15,4 +15,6 @@ public class IndividualUserDto {
     private String username;
     private String phone;
     private String password;
+    private int dailyLimit;
+
 }
