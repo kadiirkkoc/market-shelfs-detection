@@ -14,4 +14,5 @@ public class CorporateUserDto {
     private String branchNumber;
     private String phone;
     private String password;
+    private int dailyLimit;
 }

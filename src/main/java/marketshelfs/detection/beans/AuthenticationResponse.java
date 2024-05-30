@@ -13,4 +13,5 @@ import marketshelfs.detection.enums.UserRole;
 public class AuthenticationResponse {
     private String token;
     private UserRole userRole;
+    private int dailyLimit;
 }

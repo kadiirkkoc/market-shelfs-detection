@@ -7,9 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import marketshelfs.detection.dtos.ShelfDto;
 import marketshelfs.detection.enums.UserRole;
 import marketshelfs.detection.loggers.MainLogger;
-import marketshelfs.detection.loggers.messages.ShelfMessage;
-import marketshelfs.detection.model.CorporateUser;
-import marketshelfs.detection.model.IndividualUser;
 import marketshelfs.detection.model.Shelf;
 import marketshelfs.detection.model.User;
 import marketshelfs.detection.repository.CorporateUserRepository;
@@ -32,7 +29,6 @@ import java.io.StringReader;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.rmi.server.LogStream.log;
 
@@ -60,31 +56,37 @@ public class ShelfServiceImpl implements ShelfService {
         this.jwtService = jwtService;
     }
 
-
     @Override
     public Map<String, Object> addShelf(ShelfDto shelfDto) {
+        // Retrieve user information from the repository based on the username
         Optional<User> user = userRepository.findByUsername(shelfDto.getUsername());
         if (user.isEmpty()) {
             throw new IllegalArgumentException("User not found");
         }
 
         LocalDateTime now = LocalDateTime.now();
+        // Reset daily limit if the last upload was more than 24 hours ago
         if (user.get().getLastUploadTime() == null || Duration.between(user.get().getLastUploadTime(), now).toHours() >= 24) {
             user.get().setDailyLimit(user.get().getUserRole() == UserRole.INDIVIDUAL ? 3 : 10);
         }
 
+        // Check if the user has remaining daily uploads
         if (user.get().getDailyLimit() <= 0) {
             throw new IllegalStateException("Upload limit exceeded");
         }
 
+        // Update the user's last upload time and decrement the daily limit
         user.get().setLastUploadTime(now);
         user.get().setDailyLimit(user.get().getDailyLimit() - 1);
         userRepository.save(user.get());
 
+        // Upload the image to Firebase and get the URL
         String firebaseUploadedUrl = firebaseImageService.upload(shelfDto.getFile());
 
+        // Process the image with the AI service and get enriched shelf data
         ShelfDto enrichedShelfDto = processImageWithAiService();
 
+        // Create a new Shelf object with the enriched data
         Shelf shelf = Shelf.builder()
                 .category(enrichedShelfDto.getCategory())
                 .outlierProductCategory(enrichedShelfDto.getOutlierProductCategory())
@@ -96,8 +98,10 @@ public class ShelfServiceImpl implements ShelfService {
                 .renderedImageUrl(enrichedShelfDto.getRenderedImageUrl())
                 .build();
 
+        // Save the new Shelf object to the repository
         shelfRepository.save(shelf);
 
+        // Prepare the response data
         Map<String, Object> response = new HashMap<>();
         response.put("renderedImageUrl", shelf.getRenderedImageUrl());
         response.put("category", shelf.getCategory());
@@ -106,24 +110,28 @@ public class ShelfServiceImpl implements ShelfService {
         response.put("outlierProductCount", shelf.getOutlierProductCount());
         response.put("totalProductCount", shelf.getTotalProductCount());
         response.put("relationshipRatio", shelf.getRelationshipRatio());
+        response.put("dailyLimit", user.get().getDailyLimit());
 
         return response;
     }
 
-
     public ShelfDto processImageWithAiService() {
+        // Create an HTTP POST request to the AI service
         HttpPost httpPost = new HttpPost(aiServiceProcessUrl);
         httpPost.setHeader("Content-Type", "application/json");
         httpPost.setHeader("Accept", "application/json");
 
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+            // Execute the request and get the response
             HttpResponse response = httpClient.execute(httpPost);
             String responseString = EntityUtils.toString(response.getEntity());
 
+            // Parse the response JSON
             JsonReader reader = new JsonReader(new StringReader(responseString));
             reader.setLenient(true);
             JsonObject jsonResponse = JsonParser.parseReader(reader).getAsJsonObject();
 
+            // Create and return a ShelfDto object with the parsed data
             return ShelfDto.builder()
                     .category(jsonResponse.has("category") ? jsonResponse.get("category").getAsString() : null)
                     .outlierProductCategory(jsonResponse.has("outlier_product_category") ? String.valueOf(jsonResponse.get("outlier_product_category").getAsString()) : null)
@@ -140,4 +148,3 @@ public class ShelfServiceImpl implements ShelfService {
         }
     }
 }
-
